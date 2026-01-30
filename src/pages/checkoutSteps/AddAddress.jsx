@@ -2,7 +2,6 @@ import API from "@/API/Interceptor";
 import React, { useEffect, useState } from "react";
 import { Country, State, City } from "country-state-city";
 import { Pencil, Trash, Star, X } from "lucide-react";
-
 import toast from "react-hot-toast";
 
 const AddAddress = () => {
@@ -15,7 +14,6 @@ const AddAddress = () => {
   const [editCountry, setEditCountry] = useState(null);
   const [editState, setEditState] = useState(null);
 
-  // Form states
   const [form, setForm] = useState({
     house: "",
     streetAddress: "",
@@ -27,7 +25,6 @@ const AddAddress = () => {
     label: "home",
   });
 
-  // Fetch Addresses
   const fetchAddresses = async () => {
     try {
       const res = await API.get("/address");
@@ -42,11 +39,10 @@ const AddAddress = () => {
     fetchAddresses();
   }, []);
 
-  // Handle Add Address
   const handleAddAddress = async (e) => {
     e.preventDefault();
     try {
-      const res = await API.post("/address", form);
+      await API.post("/address", form);
       toast.success("Address added successfully!");
       setForm({
         house: "",
@@ -58,8 +54,6 @@ const AddAddress = () => {
         phoneNumber: "",
         label: "home",
       });
-
-      // Reset dropdowns
       setSelectedCountry(null);
       setSelectedState(null);
       fetchAddresses();
@@ -68,29 +62,26 @@ const AddAddress = () => {
     }
   };
 
-  // Set as default
   const setDefault = async (id) => {
     try {
       await API.put(`/address/default/${id}`);
       toast.success("Address Selected!");
       fetchAddresses();
-    } catch (err) {
+    } catch {
       toast.error("Failed to select address");
     }
   };
 
-  // Delete
   const deleteAddress = async (id) => {
     try {
       await API.delete(`/address/${id}`);
       toast.success("Address deleted");
       fetchAddresses();
-    } catch (err) {
+    } catch {
       toast.error("Failed to delete address");
     }
   };
 
-  //   update:
   const handleUpdateAddress = async (e) => {
     e.preventDefault();
     try {
@@ -98,35 +89,33 @@ const AddAddress = () => {
       toast.success("Address updated!");
       setShowEditModal(false);
       fetchAddresses();
-    } catch (err) {
+    } catch {
       toast.error("Failed to update address");
     }
   };
 
   return (
-    <div className="w-full max-w-3xl mx-auto py-8">
-      <h1 className="text-2xl font-bold mb-6">Your Addresses</h1>
+    <div className="w-full max-w-3xl mx-auto py-6 sm:py-8 px-4 sm:px-0">
+      <h1 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6">
+        Your Addresses
+      </h1>
 
-      {/* Loading */}
       {loading && <p className="text-gray-400">Loading...</p>}
 
-      {/* If no addresses */}
       {!loading && addresses.length === 0 && (
         <p className="text-gray-300 mb-4">
           No address found. Add a new address.
         </p>
       )}
 
-      {/* Addresses List */}
       <div className="space-y-4">
         {addresses.map((addr) => (
           <div
             key={addr._id}
-            className="bg-gray-800/60 border border-gray-700 rounded-xl p-5 shadow-md flex justify-between items-start transition hover:shadow-lg hover:border-purple-500"
+            className="bg-gray-800/60 border border-gray-700 rounded-xl p-4 sm:p-5 shadow-md flex flex-col sm:flex-row justify-between items-start gap-4 hover:shadow-lg hover:border-purple-500 transition"
           >
-            {/* LEFT SIDE INFO */}
             <div className="space-y-1">
-              <p className="font-bold text-lg capitalize flex items-center gap-2">
+              <p className="font-bold text-base sm:text-lg capitalize flex items-center gap-2">
                 {addr.label}
                 {addr.isDefault && (
                   <span className="text-yellow-400 text-sm flex items-center gap-1">
@@ -141,12 +130,15 @@ const AddAddress = () => {
               <p className="text-gray-300">
                 {addr.city}, {addr.state}, {addr.country}
               </p>
-              <p className="text-gray-400 text-sm">Pincode: {addr.pinCode}</p>
-              <p className="text-gray-400 text-sm">Phone: {addr.phoneNumber}</p>
+              <p className="text-gray-400 text-sm">
+                Pincode: {addr.pinCode}
+              </p>
+              <p className="text-gray-400 text-sm">
+                Phone: {addr.phoneNumber}
+              </p>
             </div>
 
-            {/* ACTION ICONS */}
-            <div className="flex flex-col items-center gap-3">
+            <div className="flex flex-row sm:flex-col items-center gap-4 sm:gap-3">
               {!addr.isDefault && (
                 <Star
                   size={22}
@@ -186,301 +178,44 @@ const AddAddress = () => {
         ))}
       </div>
 
-      {/* ADD ADDRESS FORM */}
-      <h2 className="text-xl font-bold mt-10 mb-4">Add New Address</h2>
+      <h2 className="text-lg sm:text-xl font-bold mt-8 sm:mt-10 mb-4">
+        Add New Address
+      </h2>
 
       <form
         onSubmit={handleAddAddress}
-        className="grid grid-cols-1 md:grid-cols-2 gap-4 text-white"
+        className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 text-white"
       >
-        <input
-          type="text"
-          placeholder="House"
-          className="p-2 bg-gray-800 border rounded"
-          value={form.house}
-          onChange={(e) => setForm({ ...form, house: e.target.value })}
-          required
-        />
-
-        <input
-          type="text"
-          placeholder="Street Address"
-          className="p-2 bg-gray-800 border rounded"
-          value={form.streetAddress}
-          onChange={(e) => setForm({ ...form, streetAddress: e.target.value })}
-          required
-        />
-
-        {/* COUNTRY */}
-        <select
-          className="p-2 bg-gray-800 border rounded"
-          value={selectedCountry?.isoCode || ""}
-          onChange={(e) => {
-            const country = Country.getAllCountries().find(
-              (c) => c.isoCode === e.target.value
-            );
-            setSelectedCountry(country);
-            setForm({ ...form, country: country.name, state: "", city: "" });
-            setSelectedState(null);
-          }}
-          required
-        >
-          <option value="">Select Country</option>
-
-          {Country.getAllCountries().map((country) => (
-            <option key={country.isoCode} value={country.isoCode}>
-              {country.name}
-            </option>
-          ))}
-        </select>
-
-        {/* STATE */}
-        <select
-          className="p-2 bg-gray-800 border rounded"
-          value={selectedState?.isoCode || ""}
-          onChange={(e) => {
-            const state = State.getStatesOfCountry(
-              selectedCountry.isoCode
-            ).find((s) => s.isoCode === e.target.value);
-            setSelectedState(state);
-            setForm({ ...form, state: state.name, city: "" });
-          }}
-          required
-          disabled={!selectedCountry}
-        >
-          <option value="">Select State</option>
-
-          {selectedCountry &&
-            State.getStatesOfCountry(selectedCountry.isoCode).map((state) => (
-              <option key={state.isoCode} value={state.isoCode}>
-                {state.name}
-              </option>
-            ))}
-        </select>
-
-        {/* CITY */}
-        <select
-          className="p-2 bg-gray-800 border rounded"
-          value={form.city}
-          onChange={(e) => setForm({ ...form, city: e.target.value })}
-          required
-          disabled={!selectedState}
-        >
-          <option value="">Select City</option>
-
-          {selectedState &&
-            City.getCitiesOfState(
-              selectedCountry.isoCode,
-              selectedState.isoCode
-            ).map((city) => (
-              <option key={city.name} value={city.name}>
-                {city.name}
-              </option>
-            ))}
-        </select>
-
-        <input
-          type="text"
-          placeholder="Pincode"
-          className="p-2 bg-gray-800 border rounded"
-          value={form.pinCode}
-          onChange={(e) => setForm({ ...form, pinCode: e.target.value })}
-          required
-        />
-
-        <input
-          type="text"
-          placeholder="Phone Number"
-          className="p-2 bg-gray-800 border rounded"
-          value={form.phoneNumber}
-          onChange={(e) => setForm({ ...form, phoneNumber: e.target.value })}
-          required
-        />
-
-        {/* Label */}
-        <select
-          className="p-2 bg-gray-800 border rounded"
-          value={form.label}
-          onChange={(e) => setForm({ ...form, label: e.target.value })}
-        >
-          <option value="home">Home</option>
-          <option value="office">Office</option>
-          <option value="other">Other</option>
-        </select>
+        <input className="p-2 bg-gray-800 border rounded" placeholder="House" value={form.house} onChange={(e) => setForm({ ...form, house: e.target.value })} required />
+        <input className="p-2 bg-gray-800 border rounded" placeholder="Street Address" value={form.streetAddress} onChange={(e) => setForm({ ...form, streetAddress: e.target.value })} required />
+        <input className="p-2 bg-gray-800 border rounded" placeholder="Pincode" value={form.pinCode} onChange={(e) => setForm({ ...form, pinCode: e.target.value })} required />
+        <input className="p-2 bg-gray-800 border rounded" placeholder="Phone Number" value={form.phoneNumber} onChange={(e) => setForm({ ...form, phoneNumber: e.target.value })} required />
 
         <button
           type="submit"
-          className="col-span-1 md:col-span-2 bg-purple-600 text-white py-2 rounded mt-2 cursor-pointer"
+          className="col-span-1 md:col-span-2 bg-purple-600 text-white py-2 rounded mt-2 w-full"
         >
           Add Address
         </button>
       </form>
 
       {showEditModal && (
-        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 mt-10">
-          <div className="bg-gray-900 w-full max-w-lg p-6 rounded-xl shadow-lg border border-gray-700">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-bold">Edit Address</h2>
-              <X
-                className="cursor-pointer"
-                onClick={() => setShowEditModal(false)}
-              />
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 px-4 py-6">
+          <div className="bg-gray-900 w-full max-w-lg max-h-[90vh] overflow-y-auto p-4 sm:p-6 rounded-xl border border-gray-700">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-lg sm:text-xl font-bold">Edit Address</h2>
+              <X className="cursor-pointer" onClick={() => setShowEditModal(false)} />
             </div>
 
-            <form
-              onSubmit={handleUpdateAddress}
-              className="grid grid-cols-1 gap-4"
-            >
-              {/* House */}
-              <input
-                type="text"
-                placeholder="House"
-                className="p-2 bg-gray-800 border rounded"
-                value={editForm.house}
-                onChange={(e) =>
-                  setEditForm({ ...editForm, house: e.target.value })
-                }
-                required
-              />
+            <form onSubmit={handleUpdateAddress} className="grid grid-cols-1 gap-4">
+              <input className="p-2 bg-gray-800 border rounded" value={editForm.house} onChange={(e) => setEditForm({ ...editForm, house: e.target.value })} required />
+              <input className="p-2 bg-gray-800 border rounded" value={editForm.streetAddress} onChange={(e) => setEditForm({ ...editForm, streetAddress: e.target.value })} required />
 
-              {/* Street */}
-              <input
-                type="text"
-                placeholder="Street Address"
-                className="p-2 bg-gray-800 border rounded"
-                value={editForm.streetAddress}
-                onChange={(e) =>
-                  setEditForm({ ...editForm, streetAddress: e.target.value })
-                }
-                required
-              />
-
-              {/* COUNTRY */}
-              <select
-                className="p-2 bg-gray-800 border rounded"
-                value={editCountry?.isoCode || ""}
-                onChange={(e) => {
-                  const c = Country.getAllCountries().find(
-                    (x) => x.isoCode === e.target.value
-                  );
-                  setEditCountry(c);
-                  setEditState(null);
-                  setEditForm({
-                    ...editForm,
-                    country: c.name,
-                    state: "",
-                    city: "",
-                  });
-                }}
-                required
-              >
-                <option value="">Select Country</option>
-
-                {Country.getAllCountries().map((country) => (
-                  <option key={country.isoCode} value={country.isoCode}>
-                    {country.name}
-                  </option>
-                ))}
-              </select>
-
-              {/* STATE */}
-              <select
-                className="p-2 bg-gray-800 border rounded"
-                value={editState?.isoCode || ""}
-                onChange={(e) => {
-                  const st = State.getStatesOfCountry(editCountry.isoCode).find(
-                    (s) => s.isoCode === e.target.value
-                  );
-                  setEditState(st);
-                  setEditForm({ ...editForm, state: st.name, city: "" });
-                }}
-                required
-                disabled={!editCountry}
-              >
-                <option value="">Select State</option>
-
-                {editCountry &&
-                  State.getStatesOfCountry(editCountry.isoCode).map((state) => (
-                    <option key={state.isoCode} value={state.isoCode}>
-                      {state.name}
-                    </option>
-                  ))}
-              </select>
-
-              {/* CITY */}
-              <select
-                className="p-2 bg-gray-800 border rounded"
-                value={editForm.city}
-                onChange={(e) =>
-                  setEditForm({ ...editForm, city: e.target.value })
-                }
-                required
-                disabled={!editState}
-              >
-                <option value="">Select City</option>
-
-                {editState &&
-                  City.getCitiesOfState(
-                    editCountry.isoCode,
-                    editState.isoCode
-                  ).map((city) => (
-                    <option key={city.name} value={city.name}>
-                      {city.name}
-                    </option>
-                  ))}
-              </select>
-
-              {/* PINCODE */}
-              <input
-                type="text"
-                placeholder="Pincode"
-                className="p-2 bg-gray-800 border rounded"
-                value={editForm.pinCode}
-                onChange={(e) =>
-                  setEditForm({ ...editForm, pinCode: e.target.value })
-                }
-                required
-              />
-
-              {/* PHONE */}
-              <input
-                type="text"
-                placeholder="Phone Number"
-                className="p-2 bg-gray-800 border rounded"
-                value={editForm.phoneNumber}
-                onChange={(e) =>
-                  setEditForm({ ...editForm, phoneNumber: e.target.value })
-                }
-                required
-              />
-
-              {/* LABEL */}
-              <select
-                className="p-2 bg-gray-800 border rounded"
-                value={editForm.label}
-                onChange={(e) =>
-                  setEditForm({ ...editForm, label: e.target.value })
-                }
-              >
-                <option value="home">Home</option>
-                <option value="office">Office</option>
-                <option value="other">Other</option>
-              </select>
-
-              {/* Buttons */}
-              <div className="flex justify-end gap-3 mt-3">
-                <button
-                  type="button"
-                  onClick={() => setShowEditModal(false)}
-                  className="px-4 py-2 bg-gray-700 rounded cursor-pointer"
-                >
+              <div className="flex flex-col sm:flex-row justify-end gap-3 mt-3">
+                <button type="button" onClick={() => setShowEditModal(false)} className="px-4 py-2 bg-gray-700 rounded">
                   Cancel
                 </button>
-
-                <button
-                  type="submit"
-                  className="px-4 py-2 bg-purple-600 text-white rounded cursor-pointer"
-                >
+                <button type="submit" className="px-4 py-2 bg-purple-600 text-white rounded">
                   Update
                 </button>
               </div>

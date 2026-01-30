@@ -23,7 +23,7 @@ const ProductDetail = () => {
   const [productData, setProductData] = useState(null);
   const { id } = useParams();
   const navigate = useNavigate();
-  const dispatch = useDispatch(); // ✅ MUST BE HERE
+  const dispatch = useDispatch();
 
   const getProductByID = async () => {
     try {
@@ -39,7 +39,6 @@ const ProductDetail = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, [id]);
 
-  // ✅ HANDLERS MUST BE INSIDE COMPONENT
   const handleAddToCart = () => {
     dispatch(createCartItems({ productId: productData._id }));
   };
@@ -51,7 +50,7 @@ const ProductDetail = () => {
 
   if (!productData) {
     return (
-      <div className="flex items-center justify-center h-[80vh] text-gray-500 text-lg">
+      <div className="flex items-center justify-center h-[80vh] text-gray-500 text-lg px-4 text-center">
         Loading product details...
       </div>
     );
@@ -60,36 +59,38 @@ const ProductDetail = () => {
   const productDetails = createProductDetail(productData);
 
   return (
-    <div className="min-h-screen bg-gray-100 py-16 px-4 flex justify-center">
+    <div className="min-h-screen bg-gray-100 py-10 sm:py-16 px-4 flex justify-center">
       <motion.div
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="max-w-6xl w-full bg-white rounded-3xl shadow-xl overflow-hidden"
+        className="max-w-6xl w-full bg-white rounded-2xl sm:rounded-3xl shadow-xl overflow-hidden"
       >
         {/* 🔙 Back */}
         <button
           onClick={() => navigate(-1)}
-          className="flex items-center gap-2 p-6 text-gray-600 hover:text-black"
+          className="flex items-center gap-2 p-4 sm:p-6 text-gray-600 hover:text-black text-sm sm:text-base"
         >
           <ArrowLeft size={18} /> Back
         </button>
 
-        <div className="grid md:grid-cols-2 gap-10 p-10">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 sm:gap-10 p-5 sm:p-10">
           {/* Image */}
           <div className="flex justify-center">
             <img
               src={productData.image}
               alt={productData.name}
-              className="rounded-xl w-full max-w-md object-cover"
+              className="rounded-xl w-full max-w-xs sm:max-w-md object-cover"
             />
           </div>
 
           {/* Info */}
-          <div className="space-y-6">
-            <h1 className="text-4xl font-bold">{productData.name}</h1>
+          <div className="space-y-5 sm:space-y-6">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold">
+              {productData.name}
+            </h1>
 
-            <p className="text-2xl font-semibold text-purple-600">
+            <p className="text-xl sm:text-2xl font-semibold text-purple-600">
               ₹{productData.price}
             </p>
 
@@ -99,16 +100,18 @@ const ProductDetail = () => {
                   <p className="text-xs uppercase text-gray-400">
                     {item.label}
                   </p>
-                  <p className="font-medium">{item.value}</p>
+                  <p className="font-medium text-sm sm:text-base">
+                    {item.value}
+                  </p>
                 </div>
               ))}
             </div>
 
             {/* Actions */}
-            <div className="flex gap-4 pt-4">
+            <div className="flex flex-col sm:flex-row gap-4 pt-4">
               <Button
                 onClick={handleAddToCart}
-                className="w-1/2 bg-black text-white"
+                className="w-full sm:w-1/2 bg-black text-white"
               >
                 <ShoppingCart className="mr-2" />
                 Add to Cart
@@ -116,7 +119,7 @@ const ProductDetail = () => {
 
               <Button
                 onClick={handleBuyNow}
-                className="w-1/2 bg-purple-600 text-white"
+                className="w-full sm:w-1/2 bg-purple-600 text-white"
               >
                 <Wallet className="mr-2" />
                 Buy Now

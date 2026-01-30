@@ -23,7 +23,6 @@ const ReviewAndPlaceOrder = ({ currentStep, setCurrentStep }) => {
     fetchAddress();
   }, []);
 
-  // CREATE ORDER API
   const createOrder = async (payload) => {
     try {
       const { data } = await API.post("/order/create", payload);
@@ -36,13 +35,12 @@ const ReviewAndPlaceOrder = ({ currentStep, setCurrentStep }) => {
 
   const handleCOD = async () => {
     const payload = {
-      orderId: `ORD-${Date.now()}`, // unique ID like Amazon
+      orderId: `ORD-${Date.now()}`,
       user: {
         userId: user?._id,
         name: user?.userName,
         email: user?.email,
       },
-
       items: cartItems?.map((item) => ({
         productId: item.product?._id,
         name: item.product?.name,
@@ -52,7 +50,6 @@ const ReviewAndPlaceOrder = ({ currentStep, setCurrentStep }) => {
         image: item.product?.image,
         category: item.product?.category,
       })),
-
       pricing: {
         itemsTotal: totalAmount,
         shippingFee: totalAmount > 499 ? 0 : 40,
@@ -62,7 +59,6 @@ const ReviewAndPlaceOrder = ({ currentStep, setCurrentStep }) => {
           (totalAmount > 499 ? 0 : 40) +
           Math.round(totalAmount * 0.05),
       },
-
       address: {
         house: selectedAddress.house,
         street: selectedAddress.streetAddress,
@@ -73,42 +69,26 @@ const ReviewAndPlaceOrder = ({ currentStep, setCurrentStep }) => {
         country: selectedAddress.country,
         label: selectedAddress.label,
       },
-
-      payment: {
-        method: "COD",
-        status: "PENDING",
-      },
-
-      status: {
-        orderStatus: "PLACED",
-        placedAt: new Date().toISOString(),
-      },
+      payment: { method: "COD", status: "PENDING" },
+      status: { orderStatus: "PLACED", placedAt: new Date().toISOString() },
     };
 
-    console.log("COD ORDER PAYLOAD →", payload);
     const res = await createOrder(payload);
-
-    if (res?.success) {
-      setCurrentStep(currentStep + 1);
-    }
+    if (res?.success) setCurrentStep(currentStep + 1);
   };
 
-  // online
   const handleOnlinePayment = async () => {
     try {
-      // Calculate amounts
       const shippingFee = totalAmount > 499 ? 0 : 40;
       const tax = Math.round(totalAmount * 0.05);
       const finalAmount = totalAmount + shippingFee + tax;
 
-      // 1) Create razorpay order from backend
       const { data } = await API.post("/order/create-payment", {
         amount: finalAmount,
       });
 
       const order = data.order;
 
-      // 2) Open Razorpay Checkout
       const options = {
         key: import.meta.env.VITE_RAZORPAY_KEY_ID,
         amount: order.amount,
@@ -116,9 +96,7 @@ const ReviewAndPlaceOrder = ({ currentStep, setCurrentStep }) => {
         name: "Gadget Shop",
         description: "Order Payment",
         order_id: order.id,
-
         handler: async function (response) {
-          // 3) verify payment
           const verify = await API.post("/order/verify-payment", {
             razorpay_order_id: response.razorpay_order_id,
             razorpay_payment_id: response.razorpay_payment_id,
@@ -126,18 +104,13 @@ const ReviewAndPlaceOrder = ({ currentStep, setCurrentStep }) => {
           });
 
           if (verify.data.success) {
-            console.log("PAYMENT VERIFIED ✔");
-
-            // FINAL ORDER PAYLOAD → SAME STRUCTURE AS COD
             const payload = {
-              orderId: `ORD-${Date.now()}`, // same as COD
-
+              orderId: `ORD-${Date.now()}`,
               user: {
                 userId: user?._id,
                 name: user?.userName,
                 email: user?.email,
               },
-
               items: cartItems?.map((item) => ({
                 productId: item.product?._id,
                 name: item.product?.name,
@@ -147,14 +120,12 @@ const ReviewAndPlaceOrder = ({ currentStep, setCurrentStep }) => {
                 image: item.product?.image,
                 category: item.product?.category,
               })),
-
               pricing: {
                 itemsTotal: totalAmount,
-                shippingFee: shippingFee,
-                tax: tax,
-                finalAmount: finalAmount,
+                shippingFee,
+                tax,
+                finalAmount,
               },
-
               address: {
                 house: selectedAddress.house,
                 street: selectedAddress.streetAddress,
@@ -165,31 +136,24 @@ const ReviewAndPlaceOrder = ({ currentStep, setCurrentStep }) => {
                 country: selectedAddress.country,
                 label: selectedAddress.label,
               },
-
               payment: {
                 method: "ONLINE",
                 status: "PAID",
-                transactionId: response.razorpay_payment_id, // extra
-                razorpayOrderId: response.razorpay_order_id, // extra
+                transactionId: response.razorpay_payment_id,
+                razorpayOrderId: response.razorpay_order_id,
               },
-
               status: {
                 orderStatus: "PLACED",
                 placedAt: new Date().toISOString(),
               },
             };
 
-            console.log("ONLINE ORDER PAYLOAD →", payload);
             const res = await createOrder(payload);
-
-            if (res?.success) {
-              setCurrentStep(currentStep + 1);
-            }
+            if (res?.success) setCurrentStep(currentStep + 1);
           } else {
             alert("Payment verification failed!");
           }
         },
-
         theme: { color: "#0f172a" },
       };
 
@@ -200,32 +164,27 @@ const ReviewAndPlaceOrder = ({ currentStep, setCurrentStep }) => {
     }
   };
 
-  // place order:
   const placeOrderHandler = () => {
-    if (paymentMethod === "COD") {
-      handleCOD();
-    } else {
-      handleOnlinePayment();
-    }
+    paymentMethod === "COD" ? handleCOD() : handleOnlinePayment();
   };
 
   return (
     <>
       {!cartItems || cartItems.length === 0 ? (
-        <div className="flex flex-col items-center justify-center h-[70vh] text-center px-6">
+        <div className="flex flex-col items-center justify-center min-h-[60vh] text-center px-4 sm:px-6">
           <img
             src="https://cdn-icons-png.flaticon.com/512/11329/11329060.png"
             alt="empty cart"
-            className="w-40 opacity-80 mb-6"
+            className="w-28 sm:w-40 opacity-80 mb-6"
           />
 
-          <h2 className="text-2xl font-bold text-gray-800 mb-2">
+          <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-2">
             Your Cart is Empty
           </h2>
 
-          <p className="text-gray-500 max-w-md mb-6">
-            With an empty cart, you cannot place an order. Start adding items
-            and enjoy your shopping experience!
+          <p className="text-gray-500 max-w-md mb-6 text-sm sm:text-base">
+            With an empty cart, you cannot place an order. Start adding items and
+            enjoy your shopping experience!
           </p>
 
           <Link to="/">
@@ -235,33 +194,32 @@ const ReviewAndPlaceOrder = ({ currentStep, setCurrentStep }) => {
           </Link>
         </div>
       ) : (
-        <div className="container mx-auto px-4 py-8 flex flex-col md:flex-row gap-6">
-          {/* LEFT SECTION */}
+        <div className="container mx-auto px-4 py-6 sm:py-8 flex flex-col md:flex-row gap-6">
+          {/* LEFT */}
           <div className="flex-1 space-y-6">
-            {/* Address Section */}
-            <div className="bg-white shadow-md rounded-xl p-6 border border-gray-100">
-              <h2 className="text-xl font-semibold border-b pb-3 mb-4">
+            <div className="bg-white shadow-md rounded-xl p-4 sm:p-6 border">
+              <h2 className="text-lg sm:text-xl font-semibold border-b pb-3 mb-4">
                 Delivery Address
               </h2>
 
-              <div className="text-gray-700 space-y-1">
+              <div className="text-gray-700 space-y-1 text-sm sm:text-base">
                 <p className="font-medium">
                   {user?.userName}{" "}
                   <span className="text-gray-500">
                     | {selectedAddress.phoneNumber}
                   </span>
                 </p>
-                <p className="text-sm leading-6">
-                  {selectedAddress.house}, {selectedAddress.streetAddress},{" "}
+                <p className="leading-6">
+                  {selectedAddress.house},{" "}
+                  {selectedAddress.streetAddress},{" "}
                   {selectedAddress.city}, {selectedAddress.state} -{" "}
                   {selectedAddress.pinCode}, {selectedAddress.country}
                 </p>
               </div>
             </div>
 
-            {/* Products Section */}
-            <div className="bg-white shadow-md rounded-xl p-6 border border-gray-100">
-              <h2 className="text-xl font-semibold border-b pb-3 mb-4">
+            <div className="bg-white shadow-md rounded-xl p-4 sm:p-6 border">
+              <h2 className="text-lg sm:text-xl font-semibold border-b pb-3 mb-4">
                 Items in your Cart
               </h2>
 
@@ -269,13 +227,13 @@ const ReviewAndPlaceOrder = ({ currentStep, setCurrentStep }) => {
                 {cartItems?.map((item) => (
                   <div
                     key={item.productId}
-                    className="flex justify-between py-4"
+                    className="flex justify-between py-3 sm:py-4 text-sm sm:text-base"
                   >
                     <div>
                       <p className="font-medium text-gray-800">
                         {item.product.name}
                       </p>
-                      <p className="text-sm text-gray-500">
+                      <p className="text-gray-500">
                         Qty: {item.quantity}
                       </p>
                     </div>
@@ -287,9 +245,8 @@ const ReviewAndPlaceOrder = ({ currentStep, setCurrentStep }) => {
               </div>
             </div>
 
-            {/* Payment Method */}
-            <div className="bg-white shadow-md rounded-xl p-6 border border-gray-100">
-              <h2 className="text-xl font-semibold border-b pb-3 mb-4">
+            <div className="bg-white shadow-md rounded-xl p-4 sm:p-6 border">
+              <h2 className="text-lg sm:text-xl font-semibold border-b pb-3 mb-4">
                 Payment Options
               </h2>
 
@@ -300,7 +257,7 @@ const ReviewAndPlaceOrder = ({ currentStep, setCurrentStep }) => {
                     value="COD"
                     checked={paymentMethod === "COD"}
                     onChange={(e) => setPaymentMethod(e.target.value)}
-                    className="w-4 h-4 text-orange-600"
+                    className="w-4 h-4"
                   />
                   <span className="text-gray-700 font-medium">
                     Cash on Delivery
@@ -313,7 +270,7 @@ const ReviewAndPlaceOrder = ({ currentStep, setCurrentStep }) => {
                     value="ONLINE"
                     checked={paymentMethod === "ONLINE"}
                     onChange={(e) => setPaymentMethod(e.target.value)}
-                    className="w-4 h-4 text-orange-600"
+                    className="w-4 h-4"
                   />
                   <span className="text-gray-700 font-medium">
                     Online Payment (UPI / Card / Wallet)
@@ -323,26 +280,27 @@ const ReviewAndPlaceOrder = ({ currentStep, setCurrentStep }) => {
             </div>
           </div>
 
-          {/* RIGHT SUMMARY SECTION */}
+          {/* RIGHT */}
           <div className="w-full md:w-1/3">
-            <div className="bg-white shadow-xl rounded-xl p-6 border border-gray-100 sticky top-24">
-              <h2 className="text-xl font-semibold mb-4 border-b pb-3">
+            <div className="bg-white shadow-xl rounded-xl p-4 sm:p-6 border sticky top-24">
+              <h2 className="text-lg sm:text-xl font-semibold mb-4 border-b pb-3">
                 Order Summary
               </h2>
 
-              <p className="text-gray-700 mb-1">Items: {cartItems.length}</p>
-              <p className="text-gray-700 mb-1">Amount: {totalAmount}</p>
-
-              <p className="text-gray-700 mb-1">
-                {" "}
-                shippingFee: {totalAmount > 499 ? 0 : 40}
+              <p className="text-gray-700 mb-1 text-sm sm:text-base">
+                Items: {cartItems.length}
+              </p>
+              <p className="text-gray-700 mb-1 text-sm sm:text-base">
+                Amount: ₹{totalAmount}
+              </p>
+              <p className="text-gray-700 mb-1 text-sm sm:text-base">
+                Shipping: {totalAmount > 499 ? 0 : 40}
+              </p>
+              <p className="text-gray-700 mb-1 text-sm sm:text-base">
+                Tax: {Math.round(totalAmount * 0.05)}
               </p>
 
-              <p className="text-gray-700 mb-1">
-                {" "}
-                tax: {Math.round(totalAmount * 0.05)}
-              </p>
-              <p className="text-2xl font-bold text-gray-800">
+              <p className="text-xl sm:text-2xl font-bold text-gray-800 mt-2">
                 Total: ₹
                 {totalAmount +
                   (totalAmount > 499 ? 0 : 40) +
@@ -352,7 +310,7 @@ const ReviewAndPlaceOrder = ({ currentStep, setCurrentStep }) => {
               <button
                 onClick={placeOrderHandler}
                 disabled={loading}
-                className="w-full mt-6 py-3 bg-purple-600 hover:bg-purple-700 transition text-white font-medium rounded-lg shadow cursor-pointer"
+                className="w-full mt-6 py-3 bg-purple-600 hover:bg-purple-700 transition text-white font-medium rounded-lg shadow"
               >
                 {loading ? "Processing..." : "Place Order"}
               </button>

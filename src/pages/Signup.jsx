@@ -30,13 +30,11 @@ const Signup = () => {
     try {
       const response = await API.post("/auth/signup", formData);
       if (response.status === 201) {
-        toast.success(response.data.message || "User created successfuly");
+        toast.success(response.data.message || "User created successfully");
         navigate("/signin");
       }
-      console.log(response);
     } catch (err) {
       toast.error(err.message || "Something went wrong");
-      console.log("err", err.message);
     }
   };
 
@@ -44,116 +42,130 @@ const Signup = () => {
     e.preventDefault();
     if (
       formData.confirmPassword &&
-      formData.password != formData.confirmPassword
+      formData.password !== formData.confirmPassword
     ) {
-      setConfirm("confirm password should be same");
+      setConfirm("Confirm password should be same");
     } else {
+      setConfirm("");
+      signupfunction(formData);
       setFormdData({
         email: "",
         password: "",
         userName: "",
         confirmPassword: "",
       });
-      setConfirm("");
-      console.log(formData);
-      signupfunction(formData);
     }
   };
 
   return (
-    <div className="flex items-center justify-center p-5 h-[80vh]">
-      <div className=" flex rounded-lg p-2 shadow-xl shadow-blue-400">
-        <div className="left">
+    <div className="flex items-center justify-center px-4 py-10 min-h-screen">
+      <div className="flex flex-col md:flex-row rounded-xl p-4 sm:p-6 shadow-xl shadow-blue-400 max-w-4xl w-full bg-white">
+        
+        {/* LEFT (Lottie) */}
+        <div className="flex justify-center md:justify-start">
           <Lottie
             animationData={signup}
             loop={true}
-            className="h-[18rem] w-[18rem]"
+            className="h-40 w-40 sm:h-60 sm:w-60 md:h-[18rem] md:w-[18rem]"
           />
         </div>
-        <div className=" p-5 border-l-1 border-blue-400 ">
-          <h1 className="mb-5 font-serif ">
+
+        {/* RIGHT (Form) */}
+        <div className="p-4 sm:p-6 md:border-l border-blue-400 flex-1">
+          <h1 className="mb-6 text-center md:text-left font-serif text-lg sm:text-xl">
             Explore Gadget Shop & connect with us
           </h1>
+
           <form
-            className="flex flex-col gap-3"
-            onSubmit={(e) => handleSubmit(e)}
+            className="flex flex-col gap-4"
+            onSubmit={handleSubmit}
           >
-            <div className="flex items-center justify-between">
-              <label htmlFor="">Email:</label>
+            {/* EMAIL */}
+            <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-6">
+              <label className="text-sm sm:min-w-[120px]">Email</label>
               <input
                 name="email"
                 value={formData.email}
-                onChange={(e) => handleChange(e)}
-                className="border-1 border-gray-400 rounded-sm p-2"
+                onChange={handleChange}
+                className="border border-gray-400 rounded-md p-2 w-full"
                 type="email"
                 placeholder="Enter your Email"
               />
             </div>
-            <div className="flex items-center justify-between">
-              <label htmlFor="">UserName:</label>
+
+            {/* USERNAME */}
+            <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-6">
+              <label className="text-sm sm:min-w-[120px]">Username</label>
               <input
                 name="userName"
                 value={formData.userName}
-                onChange={(e) => handleChange(e)}
-                className="border-1 border-gray-400 rounded-sm p-2"
+                onChange={handleChange}
+                className="border border-gray-400 rounded-md p-2 w-full"
                 type="text"
-                placeholder="Enter your UserName"
+                placeholder="Enter your Username"
               />
             </div>
 
-            <div className="flex items-center justify-between relative">
-              <label htmlFor="">Password:</label>
+            {/* PASSWORD */}
+            <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-6 relative">
+              <label className="text-sm sm:min-w-[120px]">Password</label>
               <input
                 name="password"
-                onChange={(e) => handleChange(e)}
+                onChange={handleChange}
                 value={formData.password}
-                className="border-1 border-gray-400 rounded-sm p-2"
+                className="border border-gray-400 rounded-md p-2 w-full pr-10"
                 type={seen ? "text" : "password"}
                 placeholder="Enter your Password"
               />
-              {seen ? (
-                <div className="absolute right-1">
-                  <Eye onClick={() => setSeen(!seen)} />
-                </div>
-              ) : (
-                <div className="absolute right-1">
-                  <EyeOff onClick={() => setSeen(!seen)} />
-                </div>
-              )}
+              <div className="absolute right-3 top-[55%] sm:top-1/2 -translate-y-1/2 cursor-pointer text-gray-600">
+                {seen ? (
+                  <Eye onClick={() => setSeen(false)} />
+                ) : (
+                  <EyeOff onClick={() => setSeen(true)} />
+                )}
+              </div>
             </div>
 
-            <div className="flex items-center justify-between relative">
-              <label htmlFor="">Confirm Password:</label>
+            {/* CONFIRM PASSWORD */}
+            <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-6 relative">
+              <label className="text-sm sm:min-w-[120px]">
+                Confirm Password
+              </label>
               <input
                 name="confirmPassword"
-                onChange={(e) => handleChange(e)}
+                onChange={handleChange}
                 value={formData.confirmPassword}
-                className="border-1 border-gray-400 rounded-sm p-2"
+                className="border border-gray-400 rounded-md p-2 w-full pr-10"
                 type={confirmSeen ? "text" : "password"}
                 placeholder="Confirm your Password"
               />
-              {confirmSeen ? (
-                <div className="absolute right-1">
-                  <Eye onClick={() => setConfirmSeen(!confirmSeen)} />
-                </div>
-              ) : (
-                <div className="absolute right-1">
-                  <EyeOff onClick={() => setConfirmSeen(!confirmSeen)} />
-                </div>
-              )}
+              <div className="absolute right-3 top-[55%] sm:top-1/2 -translate-y-1/2 cursor-pointer text-gray-600">
+                {confirmSeen ? (
+                  <Eye onClick={() => setConfirmSeen(false)} />
+                ) : (
+                  <EyeOff onClick={() => setConfirmSeen(true)} />
+                )}
+              </div>
             </div>
-            <p className="text-end text-red-300">{confirm && confirm}</p>
+
+            {/* ERROR */}
+            {confirm && (
+              <p className="text-red-400 text-sm text-center">{confirm}</p>
+            )}
+
+            {/* BUTTON */}
             <button
-              className="px-5 py-1 border-1 border-purple-500 rounded-lg bg-gradient-to-b from-purple-400 to-blue-300  cursor-pointer min-w-[12rem]"
+              className="mt-4 px-5 py-2 border border-purple-500 rounded-lg bg-gradient-to-b from-purple-400 to-blue-300 cursor-pointer w-full sm:w-[14rem] self-center"
               type="submit"
             >
-              {" "}
               Sign Up
             </button>
-            <p className="text-[12px] text-center">
-              Already Have Account?{" "}
-              <Link className="text-blue-400 cursor-pointer" to="/signin">
-                SignIn
+
+            {/* LINK */}
+            <p className="text-xs text-center mt-2">
+              Already have an account?{" "}
+              <Link className="text-blue-500 cursor-pointer" to="/signin">
+                Sign In
               </Link>
             </p>
           </form>
