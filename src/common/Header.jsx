@@ -94,6 +94,8 @@ const Header = () => {
 
   return (
     <>
+   // responsive update
+
       <div className="sticky top-0 z-[999] flex items-center justify-around p-4 bg-gradient-to-r from-gray-900 to-blue-200">
         {/*  logo */}
         <Link to="/">
